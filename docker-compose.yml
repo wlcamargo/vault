@@ -1,7 +1,7 @@
 services:
   # vault server
   vault-server:
-    image: "hashicorp/vault:1.13.3"
+    image: "wlcamargo/vault:1.13.3"
     volumes:
       - "./vault/config:/config"
       - "./vault/policies:/policies"
@@ -26,7 +26,7 @@ services:
 
   # vault data store
   vault-db:
-    image: "hashicorp/consul:1.19.1"
+    image: "wlcamargo/consul:1.19.1"
     networks:
       - "vault"
     ports:
@@ -42,7 +42,7 @@ services:
 
   # Postgres DB
   postgres:
-    image: postgres:10.9-alpine
+    image: wlcamargo/postgres:10.9-alpine
     hostname: postgres
     volumes:
       - "./usda-r18-1.0:/docker-entrypoint-initdb.d"
