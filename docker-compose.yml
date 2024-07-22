@@ -1,0 +1,71 @@
+services:
+  # vault server
+  vault-server:
+    image: "hashicorp/vault:1.13.3"
+    volumes:
+      - "./vault/config:/config"
+      - "./vault/policies:/policies"
+      - vault-logs:/vault/logs
+    networks:
+      - "vault"
+    cap_add:
+      - "IPC_LOCK"
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_ADDR: "http://127.0.0.1:8200"
+      VAULT_UI: "true"  # Habilita a UI do Vault
+    entrypoint: "vault server -config=/config/consul-config.json"
+    links:
+      - "vault-db"
+      - "postgres"
+    depends_on:
+      - "vault-db"
+    labels:
+      com.myapp.description: "vault server"
+
+  # vault data store
+  vault-db:
+    image: "hashicorp/consul:1.19.1"
+    networks:
+      - "vault"
+    ports:
+      - "8300:8300"
+      - "8400:8400"
+      - "8500:8500"
+      - "8600:53/udp"
+    command: "agent -server -bind=0.0.0.0 -client 0.0.0.0 -bootstrap-expect=1 -data-dir=/consul/data"
+    volumes:
+      - consul-data:/consul/data
+    labels:
+      com.myapp.description: "vault data store"
+
+  # Postgres DB
+  postgres:
+    image: postgres:10.9-alpine
+    hostname: postgres
+    volumes:
+      - "./usda-r18-1.0:/docker-entrypoint-initdb.d"
+    environment:    
+      VAULT_DEV_ROOT_TOKEN_ID: "root"
+      #terribly secure I know.
+      POSTGRES_USER: AdminGuyTy
+      POSTGRES_PASSWORD: Ineedajob
+      POSTGRES_DB: usda
+    networks:
+      - "vault"
+    ports:
+      - "5432:5432"
+    labels:
+      com.myapp.description: "postgres database"
+
+networks:
+  vault:
+
+volumes:
+  vault-logs:
+    labels:
+      com.myapp.description: "vault log files"
+  consul-data:
+    labels:
+      com.myapp.description: "consul data files"

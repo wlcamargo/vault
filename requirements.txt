@@ -1,0 +1,3 @@
+hvac 
+psycopg2-binary 
+python-consul
